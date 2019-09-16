@@ -1,0 +1,52 @@
+Kitchen is a tool to build customized OpenWrt firmwares.
+
+How to add a new target
+-----------------------
+
+Let's assume you want to add a new target named <name>.
+
+1. Create directory targets/<name>/
+2. Create file targets/<name>/version containing OpenWrt git hash (long),
+   branch name or tag.
+3. Create directory targets/<name>/configs/ and place at least one OpenWrt
+   config there with appropriate name(s). The config can be a full
+   configuration (e.g. a result from `make menuconfig'), a minimal
+   configuration (e.g. only defining a target) or even empty file
+   as in example target named master (which will build a latest OpenWrt
+   with default configuration).
+
+Optionally:
+4. Place OpenWrt patches to targets/<name>/patches/
+5. Place new files under targets/<name>/files/. Structure of
+   targets/<name>/files/ directory should be the same as openwrt/
+6. Place files/patches which are common for all your targets into
+   targets/common/ directory
+7. Add env file containing environment configuration.
+   See env.example for reference
+8. Add targets/<name>/src file containing string pointing to OpenWrt git
+   repository e.g.: git://git.openwrt.org/openwrt.git (default)
+
+
+How to use
+----------
+
+Specifying Kitchen make targets is very similar to OpenWrt, e.g.:
+
+   make <target>/<profile>/<action> <params>
+
+First try simply running `make'. It should detect all your targets and profiles.
+There are three main actions:
+1. prepare - will prepare (download/patch/copy) OpenWrt files
+2. compile - will compile OpenWrt as prepared
+3. update - update kitchen target from targets/
+
+Other actions are:
+1. clean - runs clean under OpenWrt
+2. dirclean - runs dirclean under OpenWrt
+3. distclean - runs distclean under OpenWrt
+
+Normally you should not need the latter three.
+
+compile, and all clean actions will forward make params to OpenWrt.
+E.g. `make master/default/compile V=s -j12' is identical to running
+`make V=s -j12' under OpenWrt directory.
