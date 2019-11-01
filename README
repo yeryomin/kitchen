@@ -19,6 +19,9 @@ Optionally:
 4. Place OpenWrt patches to targets/<name>/patches/
 5. Place new files under targets/<name>/files/. Structure of
    targets/<name>/files/ directory should be the same as openwrt/
+   To remove files existing in OpenWrt directory create a list in
+   targets/<name>/files/remove with file names (relative to openwrt/)
+   to delete.
 6. Place files/patches which are common for all your targets into
    targets/common/ directory
 7. Add env file containing environment configuration.
