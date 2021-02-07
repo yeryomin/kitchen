@@ -39,12 +39,12 @@ endef
 define Prepare/Files
 	if [ -d $(KITCHEN_TARGETS_DIR)/$(2)/$(3) ]; then \
 		$(call Prepare/List,$(1)/$(KITCHEN_PREPARED).$(2).$(3).list,$(KITCHEN_TARGETS_DIR)/$(2)/$(3)) && \
-		cp -r $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/* $(1)/ && \
 		for f in $$(cat $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/remove 2>/dev/null); do \
 			echo "Removing $(1)/$$f" ;\
 			rm -rf $(1)/$$f ;\
 		done ;\
 		rm -f $(1)/remove ;\
+		cp -r $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/* $(1)/ && \
 		git -C $(1) add -A && \
 			git -C $(1) commit -qam "$(KITCHEN_COMMIT_TAG) $(2) $(3)" ;\
 		mv -u $(1)/$(KITCHEN_PREPARED).$(2).$(3).list $(1)/$(KITCHEN_PREPARED).$(2).$(3) ;\
