@@ -42,7 +42,7 @@ define Prepare/Files
 		cp -r $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/* $(1)/ && \
 		for f in $$(cat $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/remove 2>/dev/null); do \
 			echo "Removing $(1)/$$f" ;\
-			rm -f $(1)/$$f ;\
+			rm -rf $(1)/$$f ;\
 		done ;\
 		rm -f $(1)/remove ;\
 		git -C $(1) add -A && \
