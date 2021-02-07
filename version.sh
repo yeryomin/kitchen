@@ -19,25 +19,45 @@ is_dirty()
 	[ $? = 0 ] && echo "-dirty"
 }
 
-d1="$1"
-d2="$2"
-c1=$(last_commit_of $d1)
-c2=$(last_commit_of $d2)
-t1=$(timestamp_of $c1)
-t2=$(timestamp_of $c2)
-version=$(git describe --abbrev=0)
-commit=
-path=
+version()
+{
+	local version
+	version=$(git describe --tags --abbrev=0 --match=$1 2>/dev/null)
+	if [ $? -ne 0 ]; then
+		version=$(git describe --tags --abbrev=0 --exclude=*/*)
+	fi
+	echo $version
+}
 
-if [ $t1 -gt $t2 ]; then
-	commit=$c1
-	path=$d1
+revision()
+{
+	version="$1"
+	d1="$2"
+	d2="$3"
+	c1=$(last_commit_of $d1)
+	c2=$(last_commit_of $d2)
+	t1=$(timestamp_of $c1)
+	t2=$(timestamp_of $c2)
+	commit=
+	path=
+
+	if [ $t1 -gt $t2 ]; then
+		commit=$c1
+		path=$d1
+	else
+		commit=$c2
+		path=$d2
+	fi
+
+	length=$(git log --oneline  $version..$commit | wc -l)
+	dirty=$(git status --short $path | grep " M ")
+
+	echo $length-g$commit$(is_dirty $d1 $d2)
+}
+
+if [ "$1" = "-r" ]; then
+	echo $(revision $(version $2/$3/*) "$4" "$5")
 else
-	commit=$c2
-	path=$d2
+	version=$(version $1/$2/*)
+	echo ${version#"$1/$2/"}
 fi
-
-length=$(git log --oneline  $version..$commit | wc -l)
-dirty=$(git status --short $path | grep " M ")
-
-echo $length-g$commit$(is_dirty $d1 $d2)

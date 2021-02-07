@@ -95,8 +95,8 @@ define Prepare/Ingridients
 	)
 	@[ -f $(1)/$(KITCHEN_PREPARED).$(5) ] || (\
 		cp $(KITCHEN_TARGETS_DIR)/$(2)/$(5)/$(KITCHEN_PROFILE) $(1)/.config ;\
-		version=$$(git describe --abbrev=0) ;\
-		revision=$$(./version.sh $(KITCHEN_TARGETS_DIR)/common/ $(KITCHEN_TARGETS_DIR)/$(2)) ;\
+		version=$$(./version.sh $(2) $(KITCHEN_PROFILE)) ;\
+		revision=$$(./version.sh -r $(2) $(KITCHEN_PROFILE) $(KITCHEN_TARGETS_DIR)/common/ $(KITCHEN_TARGETS_DIR)/$(2)) ;\
 		echo "" >> $(1)/.config ;\
 		echo "CONFIG_VERSION_NUMBER=\"$$version\"" >> $(1)/.config ;\
 		echo "CONFIG_VERSION_CODE=\"$$revision\"" >> $(1)/.config ;\
