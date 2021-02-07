@@ -60,7 +60,7 @@ define Prepare/Patches
 		$(call Prepare/List,$(1)/$(KITCHEN_PREPARED).$(2).$(3).list,$(KITCHEN_TARGETS_DIR)/$(2)/$(3)) && \
 		for p in $$(cat $(1)/$(KITCHEN_PREPARED).$(2).$(3).list); do \
 			echo "Applying $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$p" ;\
-			patch -sN -p1 -d $(1)/ < $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$p ;\
+			patch --no-backup-if-mismatch -sN -p1 -d $(1)/ < $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$p ;\
 			if [ $$? = 0 ]; then \
 				git -C $(1) add -A ;\
 				git -C $(1) commit -qam "$(KITCHEN_COMMIT_TAG) $(2) $(3) $$p" ;\
