@@ -104,4 +104,7 @@ define Prepare/Ingridients
 		touch $(1)/$(KITCHEN_PREPARED).$(5) ;\
 		echo "Target: $(2), Profile: $(KITCHEN_PROFILE), Version: $$version, Revision: $$revision" ;\
 	)
+	@[ -f $(1)/$(KITCHEN_PREPARED) ] || (\
+		echo $(KITCHEN_HASH) > $(1)/$(KITCHEN_PREPARED) ;\
+	)
 endef

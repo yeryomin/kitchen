@@ -5,6 +5,7 @@ KITCHEN_TOPDIR:=${CURDIR}
 KITCHEN_COMMIT_TAG:=kitchen:
 KITCHEN_TARGETS_DIR:=$(KITCHEN_TOPDIR)/targets
 KITCHEN_PREPARED:=.kprep
+KITCHEN_HASH ?= abcdef12
 KITCHEN_OPENWRT_GIT_DEFAULT:=git://git.openwrt.org/openwrt/openwrt.git
 KITCHEN_OPENWRT_DIR = $(KITCHEN_TOPDIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE)
 KITCHEN_OPENWRT_DL ?= $(KITCHEN_OPENWRT_DIR)/dl
@@ -30,6 +31,7 @@ vars/%:
 	$(eval KITCHEN_OPENWRT_DIR:=$(KITCHEN_TOPDIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE))
 	$(eval KITCHEN_OPENWRT_BD:=$(shell echo $(KITCHEN_OPENWRT_BD) | sed "s,%t,$(KITCHEN_TARGET),g" | sed "s,%p,$(KITCHEN_PROFILE),g"))
 	$(eval KITCHEN_OPENWRT_SD:=$(shell echo $(KITCHEN_OPENWRT_SD) | sed "s,%t,$(KITCHEN_TARGET),g" | sed "s,%p,$(KITCHEN_PROFILE),g"))
+	$(eval KITCHEN_HASH:=$(shell git log -1 --pretty=format:"%H" 2>/dev/null))
 
 define Realpath
 	$(shell realpath -m $(1))
@@ -92,4 +94,18 @@ update/%:
 	@echo Ingridients refreshed
 
 $(KITCHEN_TARGETS:=/%/update): $$(@D)/prepare update/$$(dir $$(@D))
+	@echo $(@F) stage done
+
+update-part/%:
+	$(call Update/OpenWrt,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_OPENWRT_VERSION))
+	$(call Prepare/Env,\
+		$(call Realpath,$(KITCHEN_OPENWRT_DIR)),\
+		$(call Realpath,$(KITCHEN_OPENWRT_DL)),\
+		$(call Realpath,$(KITCHEN_OPENWRT_BD)),\
+		$(call Realpath,$(KITCHEN_OPENWRT_SD)))
+	@echo Now on $(KITCHEN_OPENWRT_VERSION)
+	$(call Update/IngridientsPart,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs,$(KITCHEN_OPENWRT_VERSION))
+	@echo Ingridients partially refreshed
+
+$(KITCHEN_TARGETS:=/%/update-part): $$(@D)/prepare update-part/$$(dir $$(@D))
 	@echo $(@F) stage done
