@@ -43,6 +43,9 @@ define Update/List
 	for f in $$(git status $(3) --short | grep " M " | awk '{print $$2;}'); do \
 		echo $${f#"$(3)/"} >> $(1)/$(2) ;\
 	done ;\
+	for f in $$(git status $(3) --short | grep "A  " | awk '{print $$2;}'); do \
+		echo $${f#"$(3)/"} >> $(1)/$(2) ;\
+	done ;\
 	for f in $$(git status $(3) --short | grep " D " | awk '{print $$2;}'); do \
 		echo "Removing $(1)/$${f#"$(3)/"} (deleted from working directory)" ;\
 		rm -f $(1)/$${f#"$(3)/"} ;\
