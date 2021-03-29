@@ -97,13 +97,6 @@ $(KITCHEN_TARGETS:=/%/update): $$(@D)/prepare update/$$(dir $$(@D))
 	@echo $(@F) stage done
 
 update-part/%:
-	$(call Update/OpenWrt,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_OPENWRT_VERSION))
-	$(call Prepare/Env,\
-		$(call Realpath,$(KITCHEN_OPENWRT_DIR)),\
-		$(call Realpath,$(KITCHEN_OPENWRT_DL)),\
-		$(call Realpath,$(KITCHEN_OPENWRT_BD)),\
-		$(call Realpath,$(KITCHEN_OPENWRT_SD)))
-	@echo Now on $(KITCHEN_OPENWRT_VERSION)
 	$(call Update/IngridientsPart,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs,$(KITCHEN_OPENWRT_VERSION))
 	@echo Ingridients partially refreshed
 
