@@ -61,9 +61,14 @@ define Update/Files
 	if [ -d $(KITCHEN_TARGETS_DIR)/$(2)/$(3) ]; then \
 		$(call Update/List,$(1),$(KITCHEN_PREPARED).$(2).$(3).list,targets/$(2)/$(3)) && \
 		for f in $$(cat $(1)/$(KITCHEN_PREPARED).$(2).$(3).list 2>/dev/null); do \
-			echo "Copying updated file(s) $$f to $(1)/$$f" ;\
-			mkdir -p $$(dirname $(1)/$$f) ;\
-			cp -r $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$f $(1)/$$f ;\
+			mkdir -p $$(dirname $(1)/$${f}ZZ) ;\
+			if [ -d $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$f ]; then \
+				echo "Copying files $$f* to $(1)/$$f" ;\
+				cp -r $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$f* $(1)/$$f ;\
+			else \
+				echo "Copying file $$f to $(1)/$$f" ;\
+				cp $(KITCHEN_TARGETS_DIR)/$(2)/$(3)/$$f $(1)/$$f ;\
+			fi ;\
 		done ;\
 		git -C $(1) add -A && \
 			git -C $(1) commit -qam "$(KITCHEN_COMMIT_TAG) $(2) $(3) update to $(KITCHEN_HASH)" ;\
