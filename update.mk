@@ -102,4 +102,5 @@ endef
 define Update/Ingridients
 	$(call Remove/Ingridients,$(1),$(6))
 	$(call Prepare/Ingridients,$(1),$(2),$(3),$(4),$(5))
+	@echo $(KITCHEN_HASH) > $(1)/$(KITCHEN_PREPARED)
 endef
