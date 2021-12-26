@@ -84,12 +84,16 @@ endef
 define Prepare/Ingridients
 	@[ -f $(1)/$(KITCHEN_PREPARED).$(3) ] || (\
 		$(call Prepare/Files,$(1),common,$(3)) ;\
+		$(call Prepare/Files,$(1),common,$(3)-$(6)) ;\
 		$(call Prepare/Files,$(1),$(2),$(3)) ;\
+		$(call Prepare/Files,$(1),$(2),$(3)-$(6)) ;\
 		touch $(1)/$(KITCHEN_PREPARED).$(3) ;\
 	)
 	@[ -f $(1)/$(KITCHEN_PREPARED).$(4) ] || (\
 		$(call Prepare/Patches,$(1),common,$(4)) ;\
+		$(call Prepare/Patches,$(1),common,$(4)-$(6)) ;\
 		$(call Prepare/Patches,$(1),$(2),$(4)) ;\
+		$(call Prepare/Patches,$(1),$(2),$(4)-$(6)) ;\
 		echo "creating $(1)/$(KITCHEN_PREPARED).$(4)" ;\
 		touch $(1)/$(KITCHEN_PREPARED).$(4) ;\
 	)

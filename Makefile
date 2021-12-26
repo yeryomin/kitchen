@@ -75,7 +75,7 @@ prepare/%:
 		$(call Realpath,$(KITCHEN_OPENWRT_DL)),\
 		$(call Realpath,$(KITCHEN_OPENWRT_BD)),\
 		$(call Realpath,$(KITCHEN_OPENWRT_SD)))
-	$(call Prepare/Ingridients,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs)
+	$(call Prepare/Ingridients,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs,$(KITCHEN_OPENWRT_VERSION))
 	@echo dl cache is in $(KITCHEN_OPENWRT_DL)
 	@echo build_dir is $(KITCHEN_OPENWRT_BD)
 	@echo staging_dir is $(KITCHEN_OPENWRT_SD)

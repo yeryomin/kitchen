@@ -82,7 +82,9 @@ endef
 define Update/IngridientsPart
 	@(\
 		$(call Update/Files,$(1),common,$(3)) ;\
+		$(call Update/Files,$(1),common,$(3)-$(6)) ;\
 		$(call Update/Files,$(1),$(2),$(3)) ;\
+		$(call Update/Files,$(1),$(2),$(3)-$(6)) ;\
 		touch $(1)/$(KITCHEN_PREPARED).$(3) ;\
 	)
 	@(\
@@ -101,6 +103,6 @@ endef
 
 define Update/Ingridients
 	$(call Remove/Ingridients,$(1),$(6))
-	$(call Prepare/Ingridients,$(1),$(2),$(3),$(4),$(5))
+	$(call Prepare/Ingridients,$(1),$(2),$(3),$(4),$(5),$(6))
 	@echo $(KITCHEN_HASH) > $(1)/$(KITCHEN_PREPARED)
 endef
