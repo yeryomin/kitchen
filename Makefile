@@ -6,7 +6,7 @@ KITCHEN_COMMIT_TAG:=kitchen:
 KITCHEN_TARGETS_DIR:=$(KITCHEN_TOPDIR)/targets
 KITCHEN_PREPARED:=.kprep
 KITCHEN_HASH ?= abcdef12
-KITCHEN_OPENWRT_GIT_DEFAULT:=git://git.openwrt.org/openwrt/openwrt.git
+KITCHEN_OPENWRT_GIT_DEFAULT:=https://github.com/openwrt/openwrt
 KITCHEN_OPENWRT_DIR = $(KITCHEN_TOPDIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE)
 KITCHEN_OPENWRT_DL ?= $(KITCHEN_OPENWRT_DIR)/dl
 KITCHEN_OPENWRT_BD ?= $(KITCHEN_OPENWRT_DIR)/build_dir
@@ -22,6 +22,27 @@ none:
 	@echo "Available targets: $(KITCHEN_TARGETS)"
 	@echo "Available target/profile combinations:"
 	@for i in $(KITCHEN_TARGETS); do for c in $$(ls targets/$$i/configs/); do echo "    $$i/$$c"; done done
+	@echo "Try also running 'make list' to see target versions and their OpenWrt base versions"
+
+list:
+	@if [ -d openwrt.git ]; then \
+		echo "Updating OpenWrt history information..."; \
+		git -C openwrt.git/ fetch -q --filter=blob:none; \
+	else \
+		echo "Fetching OpenWrt history information..."; \
+		git clone -q --bare --filter=blob:none $(KITCHEN_OPENWRT_GIT_DEFAULT); \
+	fi
+	@printf "\n    %-28s%-30s%-42s%-20s\n" "target/platform" "version" "OpenWrt base" "base version date"
+	@for i in $(KITCHEN_TARGETS); do \
+		for c in $$(ls targets/$$i/configs/); do \
+			v=$$(cat targets/$$i/version); \
+			d=$$(git -C openwrt.git/ log -1 --pretty=format:%ci $$v 2>/dev/null); \
+			t="???"; [ -n "$$d" ] && t=$$d ; \
+			ver=$$(./version.sh $$i $$c) ;\
+			rev=$$(./version.sh -r $$i $$c $(KITCHEN_TARGETS_DIR)/common/ $(KITCHEN_TARGETS_DIR)/$$i) ;\
+			printf "    %-28s%-30s%-42s%-20s\n" "$$i/$$c" "$$ver-$$rev" "$$v" "$$t" ; \
+		done \
+	done
 
 vars/%:
 	$(eval KITCHEN_TARGET:=$(patsubst %/,%,$(dir $*)))
