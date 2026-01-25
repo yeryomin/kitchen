@@ -15,7 +15,7 @@ define Update/OpenWrt
 	else \
 		echo "OpenWrt version defined is a tag/hash" ;\
 		git -C $(1) stash && \
-			git -C $(1) checkout master && \
+			git -C $(1) checkout main && \
 			git -C $(1) pull ;\
 		if [ -z "$$(git -C $(1)/ branch | grep wip-$(2)$$)" ]; then\
 			echo "Creating new OpenWrt wip branch" ;\

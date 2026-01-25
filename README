@@ -12,7 +12,7 @@ Let's assume you want to add a new target named <name>.
    config there with appropriate name(s). The config can be a full
    configuration (e.g. a result from `make menuconfig'), a minimal
    configuration (e.g. only defining a target) or even empty file
-   as in example target named master (which will build a latest OpenWrt
+   as in example target named main (which will build a latest OpenWrt
    with default configuration).
 
 Optionally:
@@ -51,5 +51,5 @@ Other actions are:
 Normally you should not need the latter three.
 
 compile, and all clean actions will forward make params to OpenWrt.
-E.g. `make master/default/compile V=s -j12' is identical to running
+E.g. `make main/default/compile V=s -j12' is identical to running
 `make V=s -j12' under OpenWrt directory.
