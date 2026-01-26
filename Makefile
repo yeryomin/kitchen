@@ -7,7 +7,8 @@ KITCHEN_TARGETS_DIR:=$(KITCHEN_TOPDIR)/targets
 KITCHEN_PREPARED:=.kprep
 KITCHEN_HASH ?= abcdef12
 KITCHEN_OPENWRT_GIT_DEFAULT:=https://github.com/openwrt/openwrt
-KITCHEN_OPENWRT_DIR = $(KITCHEN_TOPDIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE)
+KITCHEN_WORK_DIR ?= $(KITCHEN_TOPDIR)
+KITCHEN_OPENWRT_DIR ?= $(KITCHEN_WORK_DIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE)
 KITCHEN_OPENWRT_DL ?= $(KITCHEN_OPENWRT_DIR)/dl
 KITCHEN_OPENWRT_BD ?= $(KITCHEN_OPENWRT_DIR)/build_dir
 KITCHEN_OPENWRT_SD ?= $(KITCHEN_OPENWRT_DIR)/staging_dir
@@ -49,7 +50,7 @@ vars/%:
 	$(eval KITCHEN_PROFILE:=$(notdir $*))
 	$(eval KITCHEN_OPENWRT_GIT?=$(shell cat $(KITCHEN_OPENWRT_SRC_FILE) 2>/dev/null))
 	$(eval KITCHEN_OPENWRT_VERSION:=$(shell cat $(KITCHEN_OPENWRT_VERSION_FILE)))
-	$(eval KITCHEN_OPENWRT_DIR:=$(KITCHEN_TOPDIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE))
+	$(eval KITCHEN_OPENWRT_DIR:=$(KITCHEN_WORK_DIR)/openwrt.$(KITCHEN_TARGET).$(KITCHEN_PROFILE))
 	$(eval KITCHEN_OPENWRT_BD:=$(shell echo $(KITCHEN_OPENWRT_BD) | sed "s,%t,$(KITCHEN_TARGET),g" | sed "s,%p,$(KITCHEN_PROFILE),g"))
 	$(eval KITCHEN_OPENWRT_SD:=$(shell echo $(KITCHEN_OPENWRT_SD) | sed "s,%t,$(KITCHEN_TARGET),g" | sed "s,%p,$(KITCHEN_PROFILE),g"))
 	$(eval KITCHEN_HASH:=$(shell git log -1 --pretty=format:"%H" 2>/dev/null))
@@ -66,16 +67,16 @@ prepare/%:
 	@echo target is $(KITCHEN_TARGET)
 	@echo profile is $(KITCHEN_PROFILE)
 	@echo preparing OpenWrt directory $(KITCHEN_OPENWRT_DIR) ...
-	$(call Prepare/OpenWrt,\
+	@$(call Prepare/OpenWrt,\
 		$(KITCHEN_OPENWRT_DIR),\
 		$(if $(KITCHEN_OPENWRT_GIT),$(KITCHEN_OPENWRT_GIT),$(KITCHEN_OPENWRT_GIT_DEFAULT)),\
 		$(KITCHEN_OPENWRT_VERSION))
-	$(call Prepare/Env,\
+	@$(call Prepare/Env,\
 		$(call Realpath,$(KITCHEN_OPENWRT_DIR)),\
 		$(call Realpath,$(KITCHEN_OPENWRT_DL)),\
 		$(call Realpath,$(KITCHEN_OPENWRT_BD)),\
 		$(call Realpath,$(KITCHEN_OPENWRT_SD)))
-	$(call Prepare/Ingridients,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs,$(KITCHEN_OPENWRT_VERSION))
+	@$(call Prepare/Ingridients,$(KITCHEN_OPENWRT_DIR),$(KITCHEN_TARGET),files,patches,configs,$(KITCHEN_OPENWRT_VERSION))
 	@echo dl cache is in $(KITCHEN_OPENWRT_DL)
 	@echo build_dir is $(KITCHEN_OPENWRT_BD)
 	@echo staging_dir is $(KITCHEN_OPENWRT_SD)
@@ -86,6 +87,17 @@ $(KITCHEN_TARGETS:=/%/prepare): vars/$$(@D) prepare/$$(dir $$(@D))
 $(KITCHEN_TARGETS:=/%/compile): $$(@D)/prepare
 	$(MAKE) -C $(KITCHEN_OPENWRT_DIR)
 	@echo $(@F) stage done
+
+$(KITCHEN_TARGETS:=/%/artifacts): vars/$$(@D) targets/$$(dir $$(@D))artifacts/$(KITCHEN_PROFILE)
+	@mkdir -p $(KITCHEN_TOPDIR)/artifacts/$(KITCHEN_TARGET)/$(KITCHEN_PROFILE)
+	@for a in $$(cat targets/$(KITCHEN_TARGET)/artifacts/$(KITCHEN_PROFILE)); do \
+		echo "$(KITCHEN_TARGET)/$(KITCHEN_PROFILE)/artifact: $(KITCHEN_OPENWRT_DIR)/$$a"; \
+		for f in $$(readlink -f $(KITCHEN_OPENWRT_DIR)/$$a); do \
+			echo "copy $$f to $(KITCHEN_TOPDIR)/artifacts/$(KITCHEN_TARGET)/$(KITCHEN_PROFILE)/"; \
+			cp $$f $(KITCHEN_TOPDIR)/artifacts/$(KITCHEN_TARGET)/$(KITCHEN_PROFILE)/; \
+		done \
+	done
+	@echo $(@F) copied to $(KITCHEN_TOPDIR)/artifacts/$(KITCHEN_TARGET)/
 
 $(KITCHEN_TARGETS:=/%/clean): $$(@D)/prepare
 	$(MAKE) -C $(KITCHEN_OPENWRT_DIR) $(@F)
@@ -123,3 +135,12 @@ update-part/%:
 
 $(KITCHEN_TARGETS:=/%/update-part): $$(@D)/prepare update-part/$$(dir $$(@D))
 	@echo $(@F) stage done
+
+docker-start:
+	docker-compose build --build-arg UID=$$(id -u) --build-arg GID=$$(id -g) && docker-compose up -d
+
+docker-run:
+	docker-compose run --rm builder
+
+docker-stop:
+	docker-compose down

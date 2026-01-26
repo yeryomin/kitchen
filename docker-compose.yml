@@ -1,0 +1,19 @@
+services:
+  builder:
+    hostname: kitchen
+    build:
+        context: .
+    volumes:
+      - ~/.ssh:/home/chef/.ssh
+      - ~/.gitconfig:/home/chef/.gitconfig
+      - ~/.bash_history:/home/chef/.bash_history
+      - work:/work
+    environment:
+      - KITCHEN_WORK_DIR=/work
+      - CCACHE_DIR=/work/ccache
+    entrypoint: /bin/bash
+    tty: true
+    stdin_open: true
+
+volumes:
+  work:
