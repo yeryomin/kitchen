@@ -28,6 +28,27 @@ define Update/OpenWrt
 	touch $(1)/$(KITCHEN_PREPARED)
 endef
 
+define Update/Feeds
+	[ -f $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ] && (\
+		md5_old=$$(cat $(1)/$(KITCHEN_PREPARED).feeds) ;\
+		md5_new=$$(md5sum -b $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf | awk '{print $$1;}') ;\
+		echo "reverting $(KITCHEN_TARGETS_DIR)/$(2)/patches-feeds ..." ;\
+		$(call Remove/Patches,$(1),$(2),patches-feeds) ;\
+		if [ "$$md5_old" = "$$md5_new" -a -f $(1)/$(KITCHEN_PREPARED).feeds ]; then \
+			echo "feeds are up to date" ;\
+		else \
+			echo "updating feeds from $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ..." ;\
+			cp $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf $(1)/ ;\
+			cd $(1) && \
+				./scripts/feeds update -a && \
+				./scripts/feeds install -a && \
+			cd - ;\
+			md5sum -b $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf | awk '{print $$1;}' > $(1)/$(KITCHEN_PREPARED).feeds ;\
+		fi ;\
+		$(call Prepare/Patches,$(1),$(2),patches-feeds) ;\
+	)
+endef
+
 define Update/List
 	a=$$(cat $(1)/$(KITCHEN_PREPARED)) ;\
 	echo -n > $(1)/$(2) ;\
@@ -102,7 +123,7 @@ define Update/IngridientsPart
 endef
 
 define Update/Ingridients
-	$(call Remove/Ingridients,$(1),$(6))
+	$(call Remove/Ingridients,$(1),$(2),$(6))
 	$(call Prepare/Ingridients,$(1),$(2),$(3),$(4),$(5),$(6))
 	@echo $(KITCHEN_HASH) > $(1)/$(KITCHEN_PREPARED)
 endef

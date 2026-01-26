@@ -1,6 +1,6 @@
 define Prepare/OpenWrt
-	@echo preparing OpenWrt source version $(3) from $(2) ...
-	@[ -f $(1)/$(KITCHEN_PREPARED) ] || (\
+	echo preparing OpenWrt source version $(3) from $(2) ...
+	[ -f $(1)/$(KITCHEN_PREPARED) ] || (\
 		rm -rf $(1) && \
 		git clone $(2) $(1) && (\
 			git -C $(1) checkout $(3) ;\
@@ -16,8 +16,23 @@ define Prepare/OpenWrt
 	)
 endef
 
+define Prepare/Feeds
+	[ -f $(1)/$(KITCHEN_PREPARED).feeds ] || (\
+	[ -f $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ] && (\
+		echo "preparing feeds from $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ..." ;\
+		cp $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf $(1)/ ;\
+		cd $(1) && \
+			./scripts/feeds update -a && \
+			./scripts/feeds install -a && \
+		cd - ;\
+		$(call Prepare/Patches,$(1),$(2),patches-feeds) ;\
+		md5sum -b $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf | awk '{print $$1}' > $(1)/$(KITCHEN_PREPARED).feeds ;\
+	)\
+	)
+endef
+
 define Prepare/Dir
-	@[ -f $(1)/$(2)/$(KITCHEN_PREPARED) ] || (\
+	[ -f $(1)/$(2)/$(KITCHEN_PREPARED) ] || (\
 		mkdir -p $(3) ;\
 		if [ "$(1)/$(2)" != "$(3)" ]; then \
 			ln -sf $(3) $(1)/$(2) ;\
@@ -82,14 +97,14 @@ endef
 # $(4) -- patches directory name
 # $(5) -- configs directory name
 define Prepare/Ingridients
-	@[ -f $(1)/$(KITCHEN_PREPARED).$(3) ] || (\
+	[ -f $(1)/$(KITCHEN_PREPARED).$(3) ] || (\
 		$(call Prepare/Files,$(1),common,$(3)) ;\
 		$(call Prepare/Files,$(1),common,$(3)-$(6)) ;\
 		$(call Prepare/Files,$(1),$(2),$(3)) ;\
 		$(call Prepare/Files,$(1),$(2),$(3)-$(6)) ;\
 		touch $(1)/$(KITCHEN_PREPARED).$(3) ;\
 	)
-	@[ -f $(1)/$(KITCHEN_PREPARED).$(4) ] || (\
+	[ -f $(1)/$(KITCHEN_PREPARED).$(4) ] || (\
 		$(call Prepare/Patches,$(1),common,$(4)) ;\
 		$(call Prepare/Patches,$(1),common,$(4)-$(6)) ;\
 		$(call Prepare/Patches,$(1),$(2),$(4)) ;\
@@ -97,7 +112,10 @@ define Prepare/Ingridients
 		echo "creating $(1)/$(KITCHEN_PREPARED).$(4)" ;\
 		touch $(1)/$(KITCHEN_PREPARED).$(4) ;\
 	)
-	@[ -f $(1)/$(KITCHEN_PREPARED).$(5) ] || (\
+	[ -f $(1)/$(KITCHEN_PREPARED).feeds ] || (\
+		$(call Prepare/Feeds,$(1),$(2)) ;\
+	)
+	[ -f $(1)/$(KITCHEN_PREPARED).$(5) ] || (\
 		cp $(KITCHEN_TARGETS_DIR)/$(2)/$(5)/$(KITCHEN_PROFILE) $(1)/.config ;\
 		version=$$(./version.sh $(2) $(KITCHEN_PROFILE)) ;\
 		revision=$$(./version.sh -r $(2) $(KITCHEN_PROFILE) $(KITCHEN_TARGETS_DIR)/common/ $(KITCHEN_TARGETS_DIR)/$(2)) ;\
@@ -108,7 +126,7 @@ define Prepare/Ingridients
 		touch $(1)/$(KITCHEN_PREPARED).$(5) ;\
 		echo "Target: $(2), Profile: $(KITCHEN_PROFILE), Version: $$version, Revision: $$revision" ;\
 	)
-	@[ -f $(1)/$(KITCHEN_PREPARED) ] || (\
+	[ -f $(1)/$(KITCHEN_PREPARED) ] || (\
 		echo $(KITCHEN_HASH) > $(1)/$(KITCHEN_PREPARED) ;\
 	)
 endef
