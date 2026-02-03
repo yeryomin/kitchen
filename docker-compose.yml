@@ -4,6 +4,7 @@ services:
     build:
         context: .
     volumes:
+      - .:/home/chef/openwrt
       - ~/.ssh:/home/chef/.ssh
       - ~/.gitconfig:/home/chef/.gitconfig
       - ~/.bash_history:/home/chef/.bash_history
