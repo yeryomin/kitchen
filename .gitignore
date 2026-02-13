@@ -1,2 +1,4 @@
 openwrt.*
 env
+/artifacts
+.DS_Store
