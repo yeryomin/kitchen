@@ -7,26 +7,27 @@ ENV LANG=C LC_ALL=C
 
 # Update and install required packages
 RUN apt-get update -q && \
-    apt-get install -q -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        ccache \
-        device-tree-compiler \
-        file \
-        gawk \
-        git \
-        git-lfs \
-        less \
-        libncurses5-dev \
-        python3 \
-        quilt  \
-        rsync \
-        ssh \
-        unzip \
-        vim-tiny \
-        wget && \
-    apt-get autoremove -q -y && \
-    apt-get clean -q -y
+	apt-get install -q -y --no-install-recommends \
+		build-essential \
+		ca-certificates \
+		ccache \
+		device-tree-compiler \
+		file \
+		gawk \
+		git \
+		git-lfs \
+		less \
+		libncurses5-dev \
+		python3 \
+		quilt  \
+		rsync \
+		ssh \
+		unzip \
+		vim-tiny \
+		wget \
+	&& \
+	apt-get autoremove -q -y && \
+	apt-get clean -q -y
 
 ARG UNAME=chef
 ARG UID=9999
