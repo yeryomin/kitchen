@@ -18,7 +18,7 @@ endef
 
 define Prepare/Feeds
 	[ -f $(1)/$(KITCHEN_PREPARED).feeds ] || (\
-	[ -f $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ] && (\
+	if [ -f $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ]; then \
 		echo "preparing feeds from $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf ..." ;\
 		cp $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf $(1)/ ;\
 		cd $(1) && \
@@ -27,7 +27,9 @@ define Prepare/Feeds
 		cd - ;\
 		$(call Prepare/Patches,$(1),$(2),patches-feeds) ;\
 		md5sum -b $(KITCHEN_TARGETS_DIR)/$(2)/feeds.conf | awk '{print $$1}' > $(1)/$(KITCHEN_PREPARED).feeds ;\
-	)\
+	else \
+		echo "feeds not configured, skipping ..." ;\
+	fi \
 	)
 endef
 
